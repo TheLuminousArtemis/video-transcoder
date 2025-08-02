@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/google/uuid"
+	"github.com/theluminousartemis/video-transcoder/internal/queue"
 )
 
 func (app *application) uploadVideo(w http.ResponseWriter, r *http.Request) {
@@ -41,6 +42,12 @@ func (app *application) uploadVideo(w http.ResponseWriter, r *http.Request) {
 	_, err = io.Copy(dst, video)
 	if err != nil {
 		app.logger.Info("Unable to copy file")
+		app.internalServerError(w, r, err)
+	}
+
+	err = queue.EnqueueTranscode(app.queueMgr.AsynqClient, id, savePath)
+	if err != nil {
+		app.logger.Info("Unable to enqueue transcode")
 		app.internalServerError(w, r, err)
 	}
 
