@@ -8,32 +8,25 @@ import (
 	"github.com/hibiken/asynq"
 )
 
-var (
-	ResolutionsSlice = []string{"360p", "480p", "720p"}
-)
-
 type TranscodePayload struct {
-	VideoID     string   `json:"video_id"`
-	Filename    string   `json:"filename"`
-	InputPath   string   `json:"input_path"`
-	OutputDir   string   `json:"output_dir"`
-	Resolutions []string `json:"resolutions"`
+	VideoID   string `json:"video_id"`
+	Filename  string `json:"filename"`
+	InputPath string `json:"input_path"`
 }
 
 func EnqueueTranscode(client *asynq.Client, videoID, filePath string) error {
 	slog.Info("file metadata", "videoID", videoID, "filePath", filePath)
 	payload, err := json.Marshal(TranscodePayload{
-		VideoID:     videoID,
-		Filename:    filepath.Base(filePath),
-		InputPath:   filePath,
-		OutputDir:   filepath.Join("outputs", videoID),
-		Resolutions: ResolutionsSlice,
+		VideoID:   videoID,
+		Filename:  filepath.Base(filePath),
+		InputPath: filePath,
 	})
 	if err != nil {
 		return err
 	}
 
 	info, err := client.Enqueue(asynq.NewTask(TypeVideoTranscode, payload))
-	slog.Info("task information", "task id", info.ID)
+	jsonInfo, _ := json.Marshal(info)
+	slog.Info("task information", "info", jsonInfo)
 	return err
 }

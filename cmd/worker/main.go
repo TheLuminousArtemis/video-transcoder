@@ -10,10 +10,9 @@ import (
 )
 
 func main() {
-	cfg := config{
-		addr:      env.GetString("ADDR", ":3030"),
+	config := &config{
 		redisAddr: env.GetString("ASYNQ_REDIS", "localhost:6379"),
-		asynqCfg: asynqConfig{
+		redisqueueCfg: asynqConfig{
 			Concurrency: 10,
 			Queues: map[string]int{
 				"critical": 6,
@@ -28,29 +27,30 @@ func main() {
 		Level: slog.LevelInfo,
 	}))
 
-	//queuemanager
-	logger.Info("connecting asynq redis client to redis", "addr", cfg.redisAddr)
-	client := asynq.NewClient(asynq.RedisClientOpt{Addr: cfg.redisAddr})
-	defer client.Close()
+	//redis queue
+	server := asynq.NewServer(
+		asynq.RedisClientOpt{Addr: config.redisAddr},
+		asynq.Config{
+			Concurrency: config.redisqueueCfg.Concurrency,
+			Queues:      config.redisqueueCfg.Queues,
+		},
+	)
 
-	queueMgr := &queue.QueueManager{
-		AsynqClient: client,
-		AsynqServer: nil,
+	//queuemanager
+	queueMgr := queue.QueueManager{
+		AsynqClient: nil,
+		AsynqServer: server,
 	}
 
 	app := application{
-		config:   cfg,
 		logger:   logger,
+		config:   config,
 		queueMgr: queueMgr,
 	}
-	//mux
-	mux := app.mount()
 
-	//starting the server
-	logger.Info("starting the server", "addr", app.config.addr)
-	err := app.start(mux)
+	err := runAsynqWorker(&app)
 	if err != nil {
-		logger.Error("error starting server", "addr", app.config.addr)
+		logger.Error(err.Error())
 	}
 
 }

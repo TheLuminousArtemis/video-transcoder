@@ -10,9 +10,9 @@ import (
 )
 
 type config struct {
-	addr       string
-	asynqredis string
-	asynqCfg   asynqConfig
+	addr      string
+	redisAddr string
+	asynqCfg  asynqConfig
 }
 
 type application struct {
