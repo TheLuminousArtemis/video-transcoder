@@ -1,0 +1,7 @@
+docker run --rm \
+    -v $(pwd)/uploads:/uploads:ro \
+    -v $(pwd)/outputs:/outputs \
+    -v $(pwd)/scripts:/scripts:ro \
+    --entrypoint bash \
+    jrottenberg/ffmpeg:latest \
+    /scripts/transcode.sh /uploads/254a5562-70fd-44db-8aea-192532636e34.mp4
