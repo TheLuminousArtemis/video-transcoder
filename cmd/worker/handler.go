@@ -49,6 +49,12 @@ var (
 // 	return nil
 // }
 
+type StatusMessage struct {
+	UUID      string `json:"id"`
+	Processed bool   `json:"processed"`
+	Status    string `json:"status"`
+}
+
 // cli orchestrator
 func (app *application) HandleTranscodeTask(ctx context.Context, t *asynq.Task) error {
 	var payload queue.TranscodePayload
@@ -96,6 +102,26 @@ func (app *application) HandleTranscodeTask(ctx context.Context, t *asynq.Task) 
 	exec.Command("docker", "service", "logs", serviceName).Run()
 
 	exec.Command("docker", "service", "rm", serviceName).Run()
+
+	statusMessage := StatusMessage{
+		UUID:      payload.VideoID,
+		Processed: true,
+		Status:    "Completed",
+	}
+
+	data, _ := json.Marshal(statusMessage)
+	// err := app.rdb.Publish(ctx, fmt.Sprintf("video:%s", payload.VideoID), data)
+	// if err != nil {
+	// 	app.logger.Error("failed to publish redis message", "err", err)
+	// }
+
+	if err := app.rdb.Publish(
+		ctx,
+		fmt.Sprintf("video:%s", payload.VideoID),
+		data,
+	).Err(); err != nil {
+		app.logger.Error("failed to publish redis message", "err", err)
+	}
 
 	return nil
 }

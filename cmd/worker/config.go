@@ -4,12 +4,14 @@ import (
 	"log/slog"
 
 	"github.com/hibiken/asynq"
+	"github.com/redis/go-redis/v9"
 	"github.com/theluminousartemis/video-transcoder/internal/queue"
 )
 
 type config struct {
 	redisAddr     string
 	redisqueueCfg asynqConfig
+	redisCfg      redisConfig
 }
 
 type asynqConfig struct {
@@ -17,10 +19,17 @@ type asynqConfig struct {
 	Queues      map[string]int
 }
 
+type redisConfig struct {
+	addr     string
+	password string
+	db       int
+}
+
 type application struct {
 	logger   *slog.Logger
 	config   *config
 	queueMgr queue.QueueManager
+	rdb      *redis.Client
 }
 
 func runAsynqWorker(app *application) error {

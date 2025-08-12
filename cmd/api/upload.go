@@ -51,5 +51,5 @@ func (app *application) uploadVideo(w http.ResponseWriter, r *http.Request) {
 		app.internalServerError(w, r, err)
 	}
 
-	WriteJSON(w, http.StatusOK, map[string]string{"message": "file uploaded successfully"})
+	WriteJSON(w, http.StatusOK, map[string]string{"message": "file uploaded successfully", "videoId": id})
 }

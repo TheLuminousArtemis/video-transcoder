@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/hibiken/asynq"
+	"github.com/redis/go-redis/v9"
 	"github.com/theluminousartemis/video-transcoder/internal/env"
 	"github.com/theluminousartemis/video-transcoder/internal/queue"
 )
@@ -20,6 +21,11 @@ func main() {
 				"default":  3,
 				"low":      1,
 			},
+		},
+		redisCfg: redisConfig{
+			addr:     env.GetString("REDIS_ADDR", "localhost:6379"),
+			password: env.GetString("REDIS_PASSWORD", ""),
+			db:       env.GetInt("REDIS_DB", 0),
 		},
 	}
 
@@ -38,10 +44,18 @@ func main() {
 		AsynqServer: nil,
 	}
 
+	//redis
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     cfg.redisCfg.addr,
+		Password: cfg.redisCfg.password,
+		DB:       cfg.redisCfg.db,
+	})
+
 	app := application{
 		config:   cfg,
 		logger:   logger,
 		queueMgr: queueMgr,
+		rdb:      rdb,
 	}
 	//mux
 	mux := app.mount()

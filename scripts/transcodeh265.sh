@@ -29,10 +29,10 @@ fi
 INDEX_COUNT=0
 while IFS=, read -r INDEX LANG; do
   if [[ -z "$INDEX" ]]; then
-    continue
+    continue  # skip if no valid index
   fi
 
-  LANG=${LANG:-und}
+  LANG=${LANG:-und}  # default to 'und' (undefined)
   AUDIO_DIR="$WORKDIR/audio/$LANG"
   mkdir -p "$AUDIO_DIR"
 
@@ -71,7 +71,7 @@ for i in "${!RESOLUTIONS[@]}"; do
   echo "Encoding video $LABEL ($RES @ $BR)..."
 
   ffmpeg -y -i "$INPUT" \
-    -c:v libx264 -tag:v avc1 -preset medium -b:v "$BR" -s "$RES" \
+    -c:v libx265 -tag:v hvc1 -preset medium -b:v "$BR" -s "$RES" \
     -pix_fmt yuv420p \
     -an \
     -hls_time 4 -hls_playlist_type vod \
@@ -81,7 +81,7 @@ for i in "${!RESOLUTIONS[@]}"; do
   BW=$(( ${BR%k} * 1000 ))
   for LANG in $(echo "$AUDIO_TRACKS" | cut -d, -f2 | sort -u); do
     LANG=${LANG:-und}
-    echo "#EXT-X-STREAM-INF:BANDWIDTH=$BW,RESOLUTION=$RES,CODECS=\"avc1.4d401f,mp4a.40.2\",AUDIO=\"audio-$LANG\"" >> "$MASTER"
+    echo "#EXT-X-STREAM-INF:BANDWIDTH=$BW,RESOLUTION=$RES,CODECS=\"hvc1,mp4a.40.2\",AUDIO=\"audio-$LANG\"" >> "$MASTER"
     echo "$LABEL/playlist.m3u8" >> "$MASTER"
   done
 done
