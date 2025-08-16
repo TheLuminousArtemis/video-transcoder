@@ -97,7 +97,13 @@
 
 <div class="upload-container">
     {#if !uploading && !processed}
-        <input id="file-input" class="visually-hidden" type="file" accept="video/*" on:change={handleFileChange} />
+        <input
+            id="file-input"
+            class="visually-hidden"
+            type="file"
+            accept="video/*"
+            on:change={handleFileChange}
+        />
         <label for="file-input" class="btn">Choose File</label>
         <button class="btn primary" on:click={uploadVideo}>Upload</button>
         {#if file}
@@ -111,8 +117,8 @@
 
     {#if uploading && !processed}
         <div class="processing-center">
-            <div>
-                <p>Processing video...</p>
+            <div class="processing-inner">
+                <p class="processing-text">Processing video</p>
                 <div class="spinner"></div>
             </div>
         </div>
@@ -170,6 +176,15 @@
         align-items: center;
         min-height: 40vh;
         width: 100%;
+    }
+    .processing-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .processing-text {
+        margin-bottom: 0.75rem;
+        text-align: center;
     }
     .file-name {
         max-width: 80ch;
