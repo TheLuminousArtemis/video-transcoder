@@ -44,8 +44,8 @@
             autoplay: false,
             preload: "auto",
             fluid: false,
-            width: 640,
-            height: 360,
+            width: 960,
+            height: 540,
             controlBar: {
                 children: [
                     "playToggle",
@@ -92,54 +92,59 @@
     });
 </script>
 
-<video bind:this={videoElement} class="video-js vjs-default-skin" playsinline
-></video>
+<div class="player-shell">
+    <video bind:this={videoElement} class="video-js vjs-default-skin" playsinline
+    ></video>
 
-<div class="resolution-controls">
-    <button
-        class:active={currentRes === "auto"}
-        on:click={() => switchResolution("auto")}
-        disabled={currentRes === "auto"}
-    >
-        Auto
-    </button>
-    <button
-        class:active={currentRes === 360}
-        on:click={() => switchResolution(360)}
-        disabled={currentRes === 360}
-    >
-        360p
-    </button>
-    <button
-        class:active={currentRes === 480}
-        on:click={() => switchResolution(480)}
-        disabled={currentRes === 480}
-    >
-        480p
-    </button>
-    <button
-        class:active={currentRes === 720}
-        on:click={() => switchResolution(720)}
-        disabled={currentRes === 720}
-    >
-        720p
-    </button>
+    <div class="resolution-controls">
+        <button
+            class:active={currentRes === "auto"}
+            on:click={() => switchResolution("auto")}
+            disabled={currentRes === "auto"}
+        >
+            Auto
+        </button>
+        <button
+            class:active={currentRes === 360}
+            on:click={() => switchResolution(360)}
+            disabled={currentRes === 360}
+        >
+            360p
+        </button>
+        <button
+            class:active={currentRes === 480}
+            on:click={() => switchResolution(480)}
+            disabled={currentRes === 480}
+        >
+            480p
+        </button>
+        <button
+            class:active={currentRes === 720}
+            on:click={() => switchResolution(720)}
+            disabled={currentRes === 720}
+        >
+            720p
+        </button>
+    </div>
 </div>
 
 <style>
-    .video-js {
-        max-width: 640px;
-        max-height: 360px;
+    .player-shell {
+        max-width: 960px;
         margin: 0 auto;
+    }
+    .video-js {
+        display: block;
+        margin: 0 auto;
+        max-width: 960px;
+        max-height: 540px;
     }
     .resolution-controls {
         display: flex;
         gap: 0.5rem;
         justify-content: center;
         align-items: center;
-        margin: 0.75rem auto 0;
-        width: 100%;
-        max-width: 640px;
+        margin-top: 0.75rem;
     }
     .resolution-controls button {
         padding: 0.4rem 0.8rem;
