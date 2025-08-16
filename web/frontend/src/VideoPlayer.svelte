@@ -43,9 +43,8 @@
             controls: true,
             autoplay: false,
             preload: "auto",
-            fluid: false,
-            width: 960,
-            height: 540,
+            fluid: true,
+            aspectRatio: "16:9",
             controlBar: {
                 children: [
                     "playToggle",
@@ -130,21 +129,23 @@
 
 <style>
     .player-shell {
-        max-width: 960px;
+        width: min(95vw, 960px);
         margin: 0 auto;
     }
     .video-js {
         display: block;
+        width: 100%;
+        height: auto;
         margin: 0 auto;
-        max-width: 960px;
-        max-height: 540px;
     }
     .resolution-controls {
         display: flex;
         gap: 0.5rem;
         justify-content: center;
         align-items: center;
-        margin-top: 0.75rem;
+        margin: 0.75rem auto 0;
+        width: min(95vw, 960px);
+        flex-wrap: wrap;
     }
     .resolution-controls button {
         padding: 0.4rem 0.8rem;
@@ -153,6 +154,7 @@
         color: #111;
         border-radius: 6px;
         cursor: pointer;
+        min-width: 64px;
     }
     .resolution-controls button:hover {
         background: #f3f4f6;
