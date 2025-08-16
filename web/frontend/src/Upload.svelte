@@ -62,13 +62,13 @@
         ws = new WebSocket(`ws://localhost:3030/api/v1/ws?id=${id}`);
 
         ws.onopen = () => {
-            console.log("✅ WebSocket connected");
+            console.log("WebSocket connected");
         };
 
         ws.onmessage = (event: MessageEvent) => {
             try {
                 const msg: StatusMessage = JSON.parse(event.data);
-                console.log("📨 Message from server:", msg);
+                console.log("Message from server:", msg);
 
                 if (msg.processed) {
                     processed = true;
@@ -86,7 +86,7 @@
         };
 
         ws.onclose = () => {
-            console.log("🔌 WebSocket closed");
+            console.log("WebSocket closed");
         };
     };
 
@@ -96,24 +96,32 @@
 </script>
 
 <div class="upload-container">
-    <input type="file" accept="video/*" on:change={handleFileChange} />
-    <button on:click={uploadVideo} disabled={uploading || processed}>
-        {uploading ? "Uploading..." : "Upload"}
-    </button>
+    {#if !uploading && !processed}
+        <input id="file-input" class="visually-hidden" type="file" accept="video/*" on:change={handleFileChange} />
+        <label for="file-input" class="btn">Choose File</label>
+        <button class="btn primary" on:click={uploadVideo}>Upload</button>
+        {#if file}
+            <div class="file-name" title={file.name}>{file.name}</div>
+        {/if}
+    {/if}
 
     {#if errorMsg}
         <p style="color:red;">{errorMsg}</p>
     {/if}
 
     {#if uploading && !processed}
-        <div>
-            <p>Processing video...</p>
-            <div class="spinner"></div>
+        <div class="processing-center">
+            <div>
+                <p>Processing video...</p>
+                <div class="spinner"></div>
+            </div>
         </div>
     {/if}
 
     {#if processed && videoId}
-        <VideoPlayer {videoId} />
+        <div class="player-center">
+            <VideoPlayer {videoId} />
+        </div>
     {/if}
 </div>
 
@@ -123,6 +131,60 @@
         flex-direction: column;
         align-items: center;
         gap: 1rem;
+    }
+    .btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        color: #111;
+        border-radius: 6px;
+        cursor: pointer;
+        user-select: none;
+    }
+    .btn:hover {
+        background: #f3f4f6;
+    }
+    .btn.primary {
+        background: #3b82f6;
+        color: #fff;
+        border-color: #3b82f6;
+    }
+    .btn.primary:hover {
+        background: #2563eb;
+        border-color: #2563eb;
+    }
+    .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+    .processing-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 40vh;
+        width: 100%;
+    }
+    .file-name {
+        max-width: 80ch;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #374151;
+        font-size: 0.9rem;
+    }
+    .player-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 70vh;
+        width: 100%;
     }
     .spinner {
         border: 4px solid #f3f3f3;

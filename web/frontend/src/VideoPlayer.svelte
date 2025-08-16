@@ -136,7 +136,10 @@
         display: flex;
         gap: 0.5rem;
         justify-content: center;
-        margin-top: 0.75rem;
+        align-items: center;
+        margin: 0.75rem auto 0;
+        width: 100%;
+        max-width: 640px;
     }
     .resolution-controls button {
         padding: 0.4rem 0.8rem;
