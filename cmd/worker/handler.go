@@ -73,7 +73,7 @@ func (app *application) HandleTranscodeTask(ctx context.Context, t *asynq.Task) 
 		"--mount", fmt.Sprintf("type=bind,src=%s,dst=/scripts,ro", scriptsDir),
 		"--entrypoint", "bash",
 		"jrottenberg/ffmpeg:latest",
-		"/scripts/transcode.sh", fmt.Sprintf("/uploads/%s", payload.Filename),
+		"/scripts/transcodeh265.sh", fmt.Sprintf("/uploads/%s", payload.Filename),
 	)
 
 	cmd.Stdout = os.Stdout

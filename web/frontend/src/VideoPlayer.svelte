@@ -2,39 +2,18 @@
     import { onMount, onDestroy } from "svelte";
     import videojs from "video.js";
     import type Player from "video.js/dist/types/player";
+
     import "video.js/dist/video-js.css";
+    import "jb-videojs-hls-quality-selector/dist/videojs-hls-quality-selector.css";
+
+    import "videojs-contrib-quality-levels";
+    import "jb-videojs-hls-quality-selector";
 
     export let videoId: string;
 
     let player: Player | null = null;
     let videoElement: HTMLVideoElement;
-    let currentRes: "auto" | 360 | 480 | 720 = "auto";
-
     const backendUrl = "http://localhost:3030";
-
-    // Switch resolution by loading the variant playlist, preserving time/state
-    function switchResolution(res: "auto" | 360 | 480 | 720) {
-        if (!player) return;
-        const base = `${backendUrl}/videos/${videoId}`;
-        const newSrc =
-            res === "auto"
-                ? `${base}/master.m3u8`
-                : `${base}/${res}p/playlist.m3u8`;
-
-        const currentTime = player.currentTime?.() ?? 0;
-        const wasPaused = player.paused?.();
-
-        player.src({ src: newSrc, type: "application/x-mpegURL" });
-        player.one?.("loadedmetadata", () => {
-            try {
-                player!.currentTime?.(currentTime);
-            } catch {}
-            if (wasPaused === false) {
-                player!.play?.();
-            }
-        });
-        currentRes = res;
-    }
 
     onMount(() => {
         if (!videoElement) return;
@@ -52,33 +31,42 @@
                     "volumePanel",
                     "subsCapsButton",
                     "audioTrackButton",
+                    "qualitySelector",
                     "fullscreenToggle",
                 ],
             },
         }) as Player;
 
-        // Default to auto quality on load
-        switchResolution("auto");
+        player.src({
+            src: `${backendUrl}/videos/${videoId}/master.m3u8`,
+            type: "application/x-mpegURL",
+        });
+
+        player.ready(() => {
+            (player as any).hlsQualitySelector({
+                displayCurrentQuality: true,
+            });
+        });
 
         player.on("loadedmetadata", () => {
-            try {
-                const tracks = (player as any).audioTracks?.();
-                const len: number =
-                    typeof tracks?.length === "function"
-                        ? tracks.length()
-                        : (tracks?.length ?? 0);
-                if (len > 0) {
-                    console.log("Available audio tracks:");
-                    for (let i = 0; i < len; i++) {
-                        const t =
-                            typeof tracks.item === "function"
-                                ? tracks.item(i)
-                                : tracks[i];
-                        console.log(`${i}: ${t?.label || t?.id || "Unnamed"}`);
-                    }
+            const ql = (player as any).qualityLevels?.();
+            console.log("Detected quality levels:", ql?.length);
+            if (ql) {
+                for (let i = 0; i < ql.length; i++) {
+                    console.log(
+                        `Level ${i}: ${ql[i].height}p @ ${ql[i].bitrate}`,
+                    );
                 }
-            } catch (e) {
-                console.warn("Audio track enumeration failed", e);
+            }
+
+            const tracks = (player as any).audioTracks?.();
+            if (tracks?.length) {
+                console.log("Available audio tracks:");
+                for (let i = 0; i < tracks.length; i++) {
+                    console.log(
+                        `${i}: ${tracks[i]?.label || tracks[i]?.id || "Unnamed"}`,
+                    );
+                }
             }
         });
     });
@@ -92,39 +80,12 @@
 </script>
 
 <div class="player-shell">
-    <video bind:this={videoElement} class="video-js vjs-default-skin" playsinline
+    <!-- svelte-ignore a11y-media-has-caption -->
+    <video
+        bind:this={videoElement}
+        class="video-js vjs-default-skin"
+        playsinline
     ></video>
-
-    <div class="resolution-controls">
-        <button
-            class:active={currentRes === "auto"}
-            on:click={() => switchResolution("auto")}
-            disabled={currentRes === "auto"}
-        >
-            Auto
-        </button>
-        <button
-            class:active={currentRes === 360}
-            on:click={() => switchResolution(360)}
-            disabled={currentRes === 360}
-        >
-            360p
-        </button>
-        <button
-            class:active={currentRes === 480}
-            on:click={() => switchResolution(480)}
-            disabled={currentRes === 480}
-        >
-            480p
-        </button>
-        <button
-            class:active={currentRes === 720}
-            on:click={() => switchResolution(720)}
-            disabled={currentRes === 720}
-        >
-            720p
-        </button>
-    </div>
 </div>
 
 <style>
@@ -137,32 +98,5 @@
         width: 100%;
         height: auto;
         margin: 0 auto;
-    }
-    .resolution-controls {
-        display: flex;
-        gap: 0.5rem;
-        justify-content: center;
-        align-items: center;
-        margin: 0.75rem auto 0;
-        width: min(95vw, 960px);
-        flex-wrap: wrap;
-    }
-    .resolution-controls button {
-        padding: 0.4rem 0.8rem;
-        border: 1px solid #d1d5db;
-        background: #fff;
-        color: #111;
-        border-radius: 6px;
-        cursor: pointer;
-        min-width: 64px;
-    }
-    .resolution-controls button:hover {
-        background: #f3f4f6;
-        color: #111;
-    }
-    .resolution-controls button.active {
-        background: #3b82f6;
-        color: white;
-        border-color: #3b82f6;
     }
 </style>
